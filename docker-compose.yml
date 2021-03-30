@@ -3,3 +3,6 @@ services:
     image: regfe89/survey_editor_backend:latest
     ports:
       - "8000:80"
+    environment:
+      - DBPASSWORD=
+      - DBUSER=
