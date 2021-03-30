@@ -6,4 +6,5 @@ pip install fastapi
 pip install uvicorn
 pip install graphene
 pip install sqlalchemy
+pip install psycopg2-binary
 pip freeze -> requirements.txt
