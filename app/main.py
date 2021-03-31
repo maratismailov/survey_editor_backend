@@ -1,5 +1,6 @@
 from graphene import ObjectType, String, Field, Schema, List, Int
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from starlette.graphql import GraphQLApp
 import json
 import os
@@ -82,8 +83,26 @@ class Oblast(ObjectType):
         return resp
 
 
+class Select(ObjectType):
+    id = Int()
+    name_ru = String()
+    name_kg = String()
+    name_en = String()
+
+
 class Query(ObjectType):
     oblast_list = List(Oblast)
+    select_list = List(Select, table_name=String(), name_column=String(), id_column=String())
+
+    def resolve_select_list(self, info, table_name, name_column, id_column):
+        print(table_name)
+        results = db.execute("SELECT " + id_column + ", " + name_column + '_ru,' +  name_column + '_en,' +name_column + '_ky ' + "FROM forest." + table_name)
+        resp = []
+        for row in results:
+            print(row)
+            resp.append(Select(id=row[0], name_ru=row[1], name_en=row[2], name_kg=row[3]))
+        return resp
+        # results = db.execute()
 
     def resolve_oblast_list(self, info):
         results = db.execute("SELECT oblast_ru, oblast_en, oblast_id FROM topo.oblast")
@@ -95,5 +114,13 @@ class Query(ObjectType):
 
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 app.add_route("/", GraphQLApp(schema=Schema(query=Query)))
