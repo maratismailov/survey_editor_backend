@@ -6,6 +6,8 @@ import json
 import os
 from sqlalchemy import create_engine
 
+from check_args import check_args
+
 DBPASSWORD = os.environ.get('DBPASSWORD')
 DBUSER = os.environ.get('DBUSER')
 DBHOST = '192.168.31.177'
@@ -85,24 +87,24 @@ class Oblast(ObjectType):
 
 class Select(ObjectType):
     id = Int()
-    name_ru = String()
-    name_kg = String()
-    name_en = String()
-
+    name = String()
 
 class Query(ObjectType):
     oblast_list = List(Oblast)
-    select_list = List(Select, table_name=String(), name_column=String(), id_column=String())
+    select_list = List(Select, table_name=String(), name_column=String(), id_column=String(), where_clause=String())
 
-    def resolve_select_list(self, info, table_name, name_column, id_column):
-        print(table_name)
-        results = db.execute("SELECT " + id_column + ", " + name_column + '_ru,' +  name_column + '_en,' +name_column + '_ky ' + "FROM forest." + table_name)
+    def resolve_select_list(self, info, table_name, name_column, id_column, where_clause=''):
         resp = []
+        args = [table_name, name_column, id_column]
+        if check_args(args) == 'not valid':
+            return
+        query = "SELECT " + id_column + ", " + name_column + " FROM forest." + table_name + " " + where_clause
+        # query = query.replace(',,', ',')
+        # query = query.replace(', FROM', ' FROM')
+        results = db.execute(query)
         for row in results:
-            print(row)
-            resp.append(Select(id=row[0], name_ru=row[1], name_en=row[2], name_kg=row[3]))
+            resp.append(Select(id=row[0], name=row[1]))
         return resp
-        # results = db.execute()
 
     def resolve_oblast_list(self, info):
         results = db.execute("SELECT oblast_ru, oblast_en, oblast_id FROM topo.oblast")
@@ -124,3 +126,9 @@ app.add_middleware(
 )
 
 app.add_route("/", GraphQLApp(schema=Schema(query=Query)))
+
+app.get("/save_survey_template/")
+def save_survey_template():
+    # print(survey_id)
+    return 'd'
+
