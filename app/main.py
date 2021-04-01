@@ -1,10 +1,11 @@
 from graphene import ObjectType, String, Field, Schema, List, Int
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.graphql import GraphQLApp
 import json
 import os
 from sqlalchemy import create_engine
+from pydantic import BaseModel
 
 from check_args import check_args
 
@@ -127,8 +128,13 @@ app.add_middleware(
 
 app.add_route("/", GraphQLApp(schema=Schema(query=Query)))
 
-app.get("/save_survey_template/")
-def save_survey_template():
-    # print(survey_id)
-    return 'd'
+@app.post("/save_survey_template/")
+async def save_survey_template(request: Request, id:  str = ""):
+    data = await request.json()
+    survey_id = data['survey_id']
+    name = data['name']
+    data = json.dumps(data)
+    print(survey_id, name)
+    query = db.execute("INSERT INTO mobile.templates (survey_id, survey_name, survey_body) VALUES ('{}', '{}', '{}')".format(survey_id, name, data))
+    return await request.json()
 
