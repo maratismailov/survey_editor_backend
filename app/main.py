@@ -5,7 +5,7 @@ from starlette.graphql import GraphQLApp
 import json
 import os
 from sqlalchemy import create_engine
-from pydantic import BaseModel
+from fastapi.encoders import jsonable_encoder
 
 from check_args import check_args
 
@@ -134,7 +134,29 @@ async def save_survey_template(request: Request, id:  str = ""):
     survey_id = data['survey_id']
     name = data['name']
     data = json.dumps(data)
-    print(survey_id, name)
+    print(survey_id)
+    ids = db.execute("SELECT survey_id FROM mobile.templates")
+    for id_num in ids:
+        if id == id_num[0]:
+            query = db.execute("UPDATE mobile.templates SET (survey_body, survey_name) = ('{}', '{}') WHERE survey_id = '{}'".format(data, name, id))
+            return 'success'
     query = db.execute("INSERT INTO mobile.templates (survey_id, survey_name, survey_body) VALUES ('{}', '{}', '{}')".format(survey_id, name, data))
-    return await request.json()
+    return 'success'
 
+
+@app.get("/get_templates_list")
+def get_templates_list():
+    templates_list = db.execute("SELECT survey_id, survey_name FROM mobile.templates")
+    a_list = []
+    for template in templates_list:
+        a_list.append(jsonable_encoder(template))
+    response = json.dumps(a_list)
+    return response
+
+@app.get("/get_template_by_id")
+def get_template_by_id(id: str):
+    results = db.execute("SELECT survey_body FROM mobile.templates WHERE survey_id ='{}'".format(id))
+    response = None
+    for template in results:
+        response = jsonable_encoder(template)
+    return json.dumps(response)
