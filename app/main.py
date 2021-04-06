@@ -155,7 +155,7 @@ def get_templates_list():
 
 @app.get("/get_template_by_id")
 def get_template_by_id(id: str):
-    results = db.execute("SELECT survey_body FROM mobile.templates WHERE survey_id ='{}'".format(id))
+    results = db.execute("SELECT survey_body as survey FROM mobile.templates WHERE survey_id ='{}'".format(id))
     response = None
     for template in results:
         response = jsonable_encoder(template)
