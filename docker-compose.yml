@@ -8,11 +8,11 @@ services:
       - DBPASSWORD=
       - DBUSER=
     networks:
-      network:
-      ipv4_address: '172.22.0.8'
+      survey_network:
+        ipv4_address: 172.22.0.8
 
 networks:
-  network:
+  survey_network:
     ipam:
       driver: default
       config:
