@@ -9,7 +9,7 @@ services:
       - DBUSER=
     networks:
       network:
-      ipv4_address: 172.22.0.8
+      ipv4_address: '172.22.0.8'
 
 networks:
   network:
