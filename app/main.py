@@ -128,7 +128,7 @@ app.add_middleware(
 
 app.add_route("/", GraphQLApp(schema=Schema(query=Query)))
 
-@app.post("/save_survey_template/")
+@app.post("/save_survey_template")
 async def save_survey_template(request: Request, id:  str = ""):
     data = await request.json()
     survey_id = data['survey_id']
