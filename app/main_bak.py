@@ -160,30 +160,3 @@ def get_template_by_id(id: str):
     for template in results:
         response = jsonable_encoder(template)
     return json.dumps(response)
-
-@app.get("/generate_survey")
-def generate_survey(id: str, values: str):
-    values = json.loads(values)
-    ids = []
-    for value in values:
-        ids.append(value['value'])
-    query_text = db.execute("SELECT survey_body -> 'query_text' as initial_fields FROM mobile.templates WHERE survey_id ='{}'".format(id))
-    for query in query_text:
-        query_text = jsonable_encoder(query)['initial_fields']
-    query_text = query_text.format(*ids)
-    stand_list = db.execute(query_text)
-    # results = db.execute("SELECT survey_body as survey FROM mobile.templates WHERE survey_id ='{}'".format(id))
-    response = None
-    result = []
-    for template in stand_list:
-        response = jsonable_encoder(template)
-        result.append(response)
-    return json.dumps(result)
-
-@app.get("/get_initial_fields")
-def get_initial_fields(id: str):
-    results = db.execute("SELECT survey_body -> 'initial_fields' as initial_fields FROM mobile.templates WHERE survey_id ='{}'".format(id))
-    response = None
-    for template in results:
-        response = jsonable_encoder(template)
-    return json.dumps(response)
