@@ -14,7 +14,7 @@ DBUSER = os.environ.get('DBUSER')
 DBHOST = '192.168.31.177'
 DBNAME = 'forest_bd_work'
 
-DATABASE_URL = 'postgresql://' + DBUSER + ':' + """DBPASSWORD""" +  '@192.168.31.177/forest_bd_work'
+DATABASE_URL = 'postgresql://' + DBUSER + ':' + DBPASSWORD +  '@192.168.31.177/forest_bd_work'
 
 db = create_engine(DATABASE_URL)
 
@@ -161,8 +161,8 @@ def get_template_by_id(id: str):
         response = jsonable_encoder(template)
     return json.dumps(response)
 
-@app.get("/generate_survey")
-def generate_survey(id: str, values: str):
+@app.get("/generate_objects")
+def generate_objects(id: str, values: str):
     values = json.loads(values)
     ids = []
     for value in values:
@@ -170,6 +170,7 @@ def generate_survey(id: str, values: str):
     query_text = db.execute("SELECT survey_body -> 'query_text' as initial_fields FROM mobile.templates WHERE survey_id ='{}'".format(id))
     for query in query_text:
         query_text = jsonable_encoder(query)['initial_fields']
+    print(query_text)
     query_text = query_text.format(*ids)
     stand_list = db.execute(query_text)
     # results = db.execute("SELECT survey_body as survey FROM mobile.templates WHERE survey_id ='{}'".format(id))
@@ -178,6 +179,34 @@ def generate_survey(id: str, values: str):
     for template in stand_list:
         response = jsonable_encoder(template)
         result.append(response)
+    return json.dumps(result)
+
+@app.get("/generate_survey")
+def generate_survey(id: str):
+    query = db.execute("SELECT survey_body FROM mobile.templates WHERE survey_id ='{}'".format(id))
+    for elem in query:
+        result = jsonable_encoder(elem)
+    for elem in result['survey_body']['survey_body']:
+        if elem['type'] == 'select':
+            name = elem['select']['name_column']
+            code = elem['select']['id_column']
+            table = elem['select']['table_name']
+            where_clause = elem['select']['where_clause']
+            query_text = 'SELECT ' + name + ' ' + 'AS name, ' + code + ' ' + 'AS code ' + 'FROM ' + table + ' ' + where_clause
+            results = db.execute(query_text)
+            response = None
+            result2 = []
+            for value in results:
+                response = jsonable_encoder(value)
+                result2.append(response)
+            elem['select_values'] = result2
+    # return 's'
+    # response = None
+    # result3 = []
+    # for template in stand_list:
+    #     response = jsonable_encoder(template)
+    #     result.append(response)
+    # return 's'
     return json.dumps(result)
 
 @app.get("/get_initial_fields")
