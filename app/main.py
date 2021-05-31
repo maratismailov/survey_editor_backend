@@ -1,9 +1,11 @@
 from graphene import ObjectType, String, Field, Schema, List, Int
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
 from starlette.graphql import GraphQLApp
 import json
 import os
+import urllib.request
 from sqlalchemy import create_engine
 from fastapi.encoders import jsonable_encoder
 
@@ -180,6 +182,39 @@ def generate_objects(id: str, values: str):
         response = jsonable_encoder(template)
         result.append(response)
     return json.dumps(result)
+
+@app.get("/generate_mbtiles")
+def generate_mbtiles(id: str, values: str):
+    values = json.loads(values)
+    ids = []
+    for value in values:
+        ids.append(value['value'])
+    # geom_field_query = db.execute("SELECT survey_body -> 'geom_field' as geom_field FROM mobile.templates WHERE survey_id ='{}'".format(id))
+    query_text = db.execute("SELECT survey_body -> 'query_text' as initial_fields, survey_body -> 'geom_field' as geom_field FROM mobile.templates WHERE survey_id ='{}'".format(id))
+    for query in query_text:
+        query_text = jsonable_encoder(query)['initial_fields']
+        geom_field = jsonable_encoder(query)['geom_field']
+    query_text = query_text.format(*ids)
+    query_text = query_text.replace("*", "ST_XMin(ST_Extent({0})), ST_XMax(ST_Extent({0})), ST_YMin(ST_Extent({0})), ST_YMax(ST_Extent({0}))".format(geom_field))
+    extent = db.execute(query_text)
+    response = None
+    result = ''
+    for item in extent:
+        response = jsonable_encoder(item)
+        result = response
+    padding = 0.003
+    top = result['st_ymax'] + padding
+    bottom = result['st_ymin'] - padding
+    left = result['st_xmin'] - padding
+    right = result['st_xmax'] + padding
+    url = 'https://dev.forest.caiag.kg/mbtiles-generator/mbtiles?left=' + str(left) + '&bottom=' + str(bottom) + '&right=' + str(right) + '&top=' + str(top)
+    print(url)
+    urllib.request.urlretrieve(url, 'map.mbtiles')
+
+    # https://dev.forest.caiag.kg/mbtiles-generator/mbtiles?left=72.7560069866762&bottom=41.3816081636863&right=72.7878707934176&top=41.417875180932
+
+    # return json.dumps(result)
+    return FileResponse('map.mbtiles', media_type="application/x-sqlite3")
 
 @app.get("/generate_survey")
 def generate_survey(id: str):
