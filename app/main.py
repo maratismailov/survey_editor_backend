@@ -136,7 +136,6 @@ async def save_survey_template(request: Request, id:  str = ""):
     survey_id = data['survey_id']
     name = data['name']
     data = json.dumps(data)
-    print(survey_id)
     ids = db.execute("SELECT survey_id FROM mobile.templates")
     for id_num in ids:
         if id == id_num[0]:
@@ -172,7 +171,6 @@ def generate_objects(id: str, values: str):
     query_text = db.execute("SELECT survey_body -> 'query_text' as initial_fields FROM mobile.templates WHERE survey_id ='{}'".format(id))
     for query in query_text:
         query_text = jsonable_encoder(query)['initial_fields']
-    print(query_text)
     query_text = query_text.format(*ids)
     stand_list = db.execute(query_text)
     # results = db.execute("SELECT survey_body as survey FROM mobile.templates WHERE survey_id ='{}'".format(id))
@@ -190,34 +188,35 @@ def generate_mbtiles(id: str, values: str):
     for value in values:
         ids.append(value['value'])
     # geom_field_query = db.execute("SELECT survey_body -> 'geom_field' as geom_field FROM mobile.templates WHERE survey_id ='{}'".format(id))
-    query_text = db.execute("SELECT survey_body -> 'query_text' as initial_fields, survey_body -> 'geom_field' as geom_field FROM mobile.templates WHERE survey_id ='{}'".format(id))
+    query_text = db.execute("SELECT survey_body -> 'query_text' as initial_fields, survey_body -> 'geom_field' as geom_field, survey_body -> 'object_code' as object_code FROM mobile.templates WHERE survey_id ='{}'".format(id))
     for query in query_text:
         query_text = jsonable_encoder(query)['initial_fields']
         geom_field = jsonable_encoder(query)['geom_field']
+        obj_field = jsonable_encoder(query)['object_code']
     query_text = query_text.format(*ids)
-    query_text = query_text.replace("*", "ST_XMin(ST_Extent({0})), ST_XMax(ST_Extent({0})), ST_YMin(ST_Extent({0})), ST_YMax(ST_Extent({0}))".format(geom_field))
+    query_text = query_text.replace(geom_field, "ST_XMin(ST_Extent({0})), ST_XMax(ST_Extent({0})), ST_YMin(ST_Extent({0})), ST_YMax(ST_Extent({0}))".format(geom_field))
+    query_text = query_text.replace('ST_AsGeoJSON', '')
+    query_text = query_text.replace(obj_field, "")
+    query_text = query_text.replace(',  FROM', 'FROM')
     extent = db.execute(query_text)
     response = None
-    result = ''
     for item in extent:
-        response = jsonable_encoder(item)
+        response = (jsonable_encoder(item)['row'])
         result = response
     padding = 0.003
-    top = result['st_ymax'] + padding
-    bottom = result['st_ymin'] - padding
-    left = result['st_xmin'] - padding
-    right = result['st_xmax'] + padding
+    result = result.strip(')(').split(',')
+    top = float(result[3]) + padding
+    bottom = float(result[2]) - padding
+    left = float(result[0]) - padding
+    right = float(result[1]) + padding
     url = 'https://dev.forest.caiag.kg/mbtiles-generator/mbtiles?left=' + str(left) + '&bottom=' + str(bottom) + '&right=' + str(right) + '&top=' + str(top)
-    print(url)
     urllib.request.urlretrieve(url, 'map.mbtiles')
-
     # https://dev.forest.caiag.kg/mbtiles-generator/mbtiles?left=72.7560069866762&bottom=41.3816081636863&right=72.7878707934176&top=41.417875180932
-
     # return json.dumps(result)
     return FileResponse('map.mbtiles', media_type="application/x-sqlite3")
 
 @app.get("/generate_survey")
-def generate_survey(id: str):
+def generate_survey(id: str, values: str):
     query = db.execute("SELECT survey_body FROM mobile.templates WHERE survey_id ='{}'".format(id))
     for elem in query:
         result = jsonable_encoder(elem)
@@ -235,6 +234,54 @@ def generate_survey(id: str):
                 response = jsonable_encoder(value)
                 result2.append(response)
             elem['select_values'] = result2
+    values = json.loads(values)
+    ids = []
+    for value in values:
+        ids.append(value['value'])
+    geom_query_text = db.execute("SELECT survey_body -> 'query_text' as initial_fields, survey_body -> 'geom_field' as geom_field, survey_body -> 'object_code' as object_code FROM mobile.templates WHERE survey_id ='{}'".format(id))
+    for query in geom_query_text:
+        geom_query_text = jsonable_encoder(query)['initial_fields']
+        geom_field = jsonable_encoder(query)['geom_field']
+        obj_field = jsonable_encoder(query)['object_code']
+    geom_query_text = geom_query_text.format(*ids)
+    orig_query = geom_query_text
+    geom_query_text = geom_query_text.replace(geom_field, "ST_Centroid(ST_Extent(the_geom))")
+    geom_query_text = geom_query_text.replace(obj_field, "")
+    geom_query_text = geom_query_text.replace(',  FROM', 'FROM')
+    center = db.execute(geom_query_text)
+    response = None
+    geom_result = ''
+    for item in center:
+        response = jsonable_encoder(item)
+        geom_result = response
+    # extent_query = orig_query.replace(geom_field, "ST_Extent(the_geom)")
+    extent_query = orig_query
+    extent_query = extent_query.replace(obj_field, "")
+    extent_query = extent_query.replace(',  FROM', 'FROM')
+    extent_query = extent_query.replace('ST_AsGeoJSON', "")
+    extent_query = extent_query.replace(geom_field, "ST_XMin(ST_Extent({0})), ST_XMax(ST_Extent({0})), ST_YMin(ST_Extent({0})), ST_YMax(ST_Extent({0}))".format(geom_field))
+    extent = db.execute(extent_query)
+    response = None
+    extent_result = ''
+    for item in extent:
+        response = jsonable_encoder(item)
+        extent_result = response
+    extent_result = extent_result['row']
+    # for item in extent_result:
+    #     print(item)
+        # response = (jsonable_encoder(item)['row'])
+        # result = response
+    padding = 0.003
+    extent_result = extent_result.strip(')(').split(',')
+    for item in extent_result:
+        item = float(item)
+    # top = geom_result['st_ymax']
+    # bottom = geom_result['st_ymin']
+    # left = geom_result['st_xmin']
+    # right = geom_result['st_xmax']
+    # vert_center = (top + bottom)/2
+    # horiz_center = (left + right)/2
+    # print(vert_center, horiz_center)
     # return 's'
     # response = None
     # result3 = []
@@ -242,6 +289,8 @@ def generate_survey(id: str):
     #     response = jsonable_encoder(template)
     #     result.append(response)
     # return 's'
+    result['bounds'] = extent_result
+    result['center'] = json.loads(geom_result['st_asgeojson'])['coordinates']
     return json.dumps(result)
 
 @app.get("/get_initial_fields")
