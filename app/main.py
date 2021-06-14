@@ -16,7 +16,7 @@ DBUSER = os.environ.get('DBUSER')
 DBHOST = '192.168.31.177'
 DBNAME = 'forestry_bd'
 
-DATABASE_URL = 'postgresql://' + DBUSER + ':' + DBPASSWORD +  '@192.168.31.177/forestry_bd'
+DATABASE_URL = 'postgresql://' + DBUSER + ':' + DBPASSWORD +  '@192.168.31.177/forest_bd_work'
 
 db = create_engine(DATABASE_URL)
 
