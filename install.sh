@@ -7,4 +7,5 @@ pip install uvicorn
 pip install graphene
 pip install sqlalchemy
 pip install aiofiles
+pip install requests
 pip freeze -> requirements.txt

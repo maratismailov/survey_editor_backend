@@ -1,5 +1,7 @@
 aiofiles==0.7.0
 aniso8601==7.0.0
+certifi==2021.5.30
+chardet==4.0.0
 click==7.1.2
 fastapi==0.63.0
 graphene==2.1.8
@@ -7,12 +9,15 @@ graphql-core==2.3.2
 graphql-relay==2.0.1
 greenlet==1.0.0
 h11==0.12.0
+idna==2.10
 promise==2.3
 psycopg2-binary==2.8.6
 pydantic==1.8.1
+requests==2.25.1
 Rx==1.6.1
 six==1.15.0
 SQLAlchemy==1.4.4
 starlette==0.13.6
 typing-extensions==3.7.4.3
+urllib3==1.26.5
 uvicorn==0.13.4

@@ -8,6 +8,8 @@ import os
 import urllib.request
 from sqlalchemy import create_engine
 from fastapi.encoders import jsonable_encoder
+import base64
+import requests
 
 from check_args import check_args
 
@@ -238,6 +240,22 @@ def generate_survey(id: str, values: str):
                 response = jsonable_encoder(value)
                 result2.append(response)
             elem['select_values'] = result2
+        elif elem['type'] == 'table':
+            for table_elem in elem['fields'][0]:
+                if table_elem['type'] == 'select':
+                    name = table_elem['select']['name_column']
+                    code = table_elem['select']['id_column']
+                    table = table_elem['select']['table_name']
+                    where_clause = table_elem['select']['where_clause']
+                    query_text = 'SELECT ' + name + ' ' + 'AS name, ' + code + ' ' + 'AS code ' + 'FROM ' + table + ' ' + where_clause
+                    results = db.execute(query_text)
+                    response = None
+                    result2 = []
+                    for value in results:
+                        response = jsonable_encoder(value)
+                        result2.append(response)
+                    table_elem['select_values'] = result2
+
     values = json.loads(values)
     ids = []
     for value in values:
@@ -300,6 +318,7 @@ def generate_survey(id: str, values: str):
     #     response = jsonable_encoder(template)
     #     result.append(response)
     # return 's'
+    result['initial_fields'] = values
     result['bounds'] = extent_result
     print(result['bounds'])
     # result['center'] = json.loads(geom_result['st_asgeojson'])['coordinates']
@@ -312,3 +331,102 @@ def get_initial_fields(id: str):
     for template in results:
         response = jsonable_encoder(template)
     return json.dumps(response)
+
+
+@app.get("/send_standestimation_data")
+def send_standestimation_data(data: str):
+    data = json.loads(data)
+    for item in data:
+        if item['id'] == 'Номер лесхоза':
+            item['id'] =  'leshoz_id'
+            leshoz_id = item['val']
+        elif item['id'] == 'Номер лесничества':
+            forestry_num = item['val']
+            item['id'] = 'forestry_num'
+        elif item['id'] == 'Номер квартала':
+            item['id'] = 'block_num'
+            block_num = item['val']
+        elif item['id'] == 'exposition_id':
+            exposition_val = item['val']
+    print(leshoz_id, forestry_num, block_num)
+    forestry_id = get_forestry_id(leshoz_id, forestry_num)
+    block_id = get_block_id(forestry_id, block_num)
+    oblast_id = get_oblast_id(leshoz_id)
+    exposition_id = get_expostition_id(exposition_val)
+    print(forestry_id, block_id)
+    data.append({'id': 'forestry_id', 'val': str(forestry_id)})
+    data.append({'id': 'block_id', 'val': str(block_id)})
+    data.append({'id': 'oblast_id', 'val': str(oblast_id)})
+    data.append({'id': 'oblast_id', 'val': str(oblast_id)})
+    data.append({'id': 'unprocessed_flag', 'val': 1})
+    data.append({'id': 'standestimation_cycle', 'val': '2'})
+    for item in data:
+        if item['id'] == 'exposition_id':
+            item['val'] = str(exposition_id)
+    # for item in data:
+    #     print(item)
+    # f = open('payload.json',)
+    # data = json.load(f)
+    data_bytes = json.dumps(data).encode("ascii")
+    # Opening JSON file
+    # f = open('payload.json',)
+    # data = json.load(f)
+    # print(data_bytes)
+    # data64 = base64.b64encode(data_bytes)
+    # data64 = data64.decode('ascii')
+    # post_data = {}
+    # post_data['base64'] = data64
+    # post_data = json.dumps(post_data)
+    # print(post_data)
+    url = 'https://dev.forest.caiag.kg/ru/rent/standest/savestandestform'
+    # post = urllib.request.urlopen(url, data=bytes(post_data), encoding="ascii")
+
+    post_data = urllib.parse.urlencode({'base64': base64.b64encode(data_bytes)})
+    post_data = post_data.encode('ascii')
+    print(post_data)
+    user_agent = 'Mozilla/4.0 (compatible; MSIE 5.5; Windows NT)'
+    headers = { 'User-Agent' : user_agent,
+            'Content-type': "application/x-www-form-urlencoded",
+            'Accept': "text/plain"}
+    request = urllib.request.Request(url, data=post_data, headers=headers)
+    cookies = """show_red_items=1; _ga=GA1.2.631020320.1617350960; _ym_uid=161735096089548495; _ym_d=1617350960; _identity-frontend=a70afbde4814fde870f8fc974326e10c5ed40718117659e178080a4a3e2c4e7fa%3A2%3A%7Bi%3A0%3Bs%3A18%3A%22_identity-frontend%22%3Bi%3A1%3Bs%3A47%3A%22%5B76%2C%22yfPlk9L4YADp1bagnvrodpC1NIEucZ-w%22%2C2592000%5D%22%3B%7D; _csrf=dc45c1e918cb2b184c4082fe66deda44fc940e142446f74eae526b4c36c8fe13a%3A2%3A%7Bi%3A0%3Bs%3A5%3A%22_csrf%22%3Bi%3A1%3Bs%3A32%3A%22v00ig2tViiRAyYum94QXHo1nOS3Tgw-5%22%3B%7D; advanced-frontend=vepbsmkhen05f9rvcq71rkv6a0"""
+    cookies={'show_red_items':1, '_ga':'GA1.2.631020320.1617350960', '_ym_uid':161735096089548495, '_ym_d':1617350960, '_identity-frontend':'a70afbde4814fde870f8fc974326e10c5ed40718117659e178080a4a3e2c4e7fa%3A2%3A%7Bi%3A0%3Bs%3A18%3A%22_identity-frontend%22%3Bi%3A1%3Bs%3A47%3A%22%5B76%2C%22yfPlk9L4YADp1bagnvrodpC1NIEucZ-w%22%2C2592000%5D%22%3B%7D', '_csrf':'dc45c1e918cb2b184c4082fe66deda44fc940e142446f74eae526b4c36c8fe13a%3A2%3A%7Bi%3A0%3Bs%3A5%3A%22_csrf%22%3Bi%3A1%3Bs%3A32%3A%22v00ig2tViiRAyYum94QXHo1nOS3Tgw-5%22%3B%7D', 'advanced-frontend':'vepbsmkhen05f9rvcq71rkv6a0'}
+    response = requests.post(url, cookies={'_csrf': 'dc45c1e918cb2b184c4082fe66deda44fc940e142446f74eae526b4c36c8fe13a%3A2%3A%7Bi%3A0%3Bs%3A5%3A%22_csrf%22%3Bi%3A1%3Bs%3A32%3A%22v00ig2tViiRAyYum94QXHo1nOS3Tgw-5%22%3B%7D';'_identity-frontend':"""a70afbde4814fde870f8fc974326e10c5ed40718117659e178080a4a3e2c4e7fa%3A2%3A%7Bi%3A0%3Bs%3A18%3A%22_identity-frontend%22%3Bi%3A1%3Bs%3A47%3A%22%5B76%2C%22yfPlk9L4YADp1bagnvrodpC1NIEucZ-w%22%2C2592000%5D%22%3B%7D"""}, headers=headers).text
+    print(request)
+    # response = urllib.request.urlopen(request).read()
+    print(response)
+    # results = db.execute("SELECT survey_body -> 'initial_fields' as initial_fields FROM mobile.templates WHERE survey_id ='{}'".format(id))
+    # response = None
+    # for template in results:
+    #     response = jsonable_encoder(template)
+    return 's'
+    return json.dumps(response)
+
+
+def get_forestry_id(leshoz_id, forestry_num):
+    result = db.execute("select gid from forest.forestry f where leshoz_id = '{}' and forestry_num = '{}'".format(leshoz_id, forestry_num))
+    response = None
+    for data in result:
+        response = jsonable_encoder(data)
+    return response['gid']
+
+def get_block_id(forestry_id, block_num):
+    result = db.execute("select gid from forest.block b where forestry_id = '{}' and block_num = '{}'".format(forestry_id, block_num))
+    response = None
+    for data in result:
+        response = jsonable_encoder(data)
+    return response['gid']
+
+def get_oblast_id(leshoz_id):
+    result = db.execute("select oblast_id from forest.leshoz l where leshoz_id = '{}'".format(leshoz_id))
+    response = None
+    for data in result:
+        response = jsonable_encoder(data)
+    return response['oblast_id']
+
+def get_expostition_id(exposition_val):
+    result = db.execute("select exposition_id from forest.exposition e where abbreviation = '{}'".format(exposition_val))
+    response = None
+    for data in result:
+        response = jsonable_encoder(data)
+    return response['exposition_id']

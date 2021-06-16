@@ -1,0 +1,387 @@
+[
+    {
+        "id": "unprocessed_data",
+        "val": "0"
+    },
+    {
+        "id": "standestimation_id",
+        "val": ""
+    },
+    {
+        "id": "standestimation_cycle",
+        "val": "2"
+    },
+    {
+        "id": "unprocessed_flag",
+        "val": 1
+    },
+    {
+        "id": "oblast_id",
+        "val": "4"
+    },
+    {
+        "id": "leshoz_id",
+        "val": "22"
+    },
+    {
+        "id": "forestry_id",
+        "val": "888"
+    },
+    {
+        "id": "block_id",
+        "val": "18039"
+    },
+    {
+        "id": "block_num",
+        "val": ""
+    },
+    {
+        "id": "stand_code",
+        "val": "0"
+    },
+    {
+        "id": "stand_num",
+        "val": "8"
+    },
+    {
+        "id": "leaflet-base-layers",
+        "val": "on"
+    },
+    {
+        "id": "leaflet-base-layers",
+        "val": "on"
+    },
+    {
+        "val": 1
+    },
+    {
+        "val": 1
+    },
+    {
+        "val": 1
+    },
+    {
+        "val": 1
+    },
+    {
+        "val": 1
+    },
+    {
+        "id": "estimation_year",
+        "val": "0"
+    },
+    {
+        "id": "estimation_date",
+        "val": ""
+    },
+    {
+        "id": "stand_area",
+        "val": ""
+    },
+    {
+        "id": "show_red_items",
+        "val": 1
+    },
+    {
+        "id": "oldstandnums",
+        "val": "old-test"
+    },
+    {
+        "id": "protectcategory_id",
+        "val": "3"
+    },
+    {
+        "id": "foresttype_id",
+        "val": "5"
+    },
+    {
+        "id": "landcategory_id",
+        "val": "27"
+    },
+    {
+        "id": "exploitationcat_id",
+        "val": "1"
+    },
+    {
+        "id": "exposition_id",
+        "val": "2"
+    },
+    {
+        "id": "forestorigin_id",
+        "val": "2"
+    },
+    {
+        "id": "layerage_id",
+        "val": "1"
+    },
+    {
+        "id": "evolutionstage_id",
+        "val": "2"
+    },
+    {
+        "id": "forestcomposition.woodspecies.-1",
+        "val": "51"
+    },
+    {
+        "id": "forestcomposition.species_percent.-1",
+        "val": "20"
+    },
+    {
+        "id": "forestcomposition.woodspecies.-2",
+        "val": "53"
+    },
+    {
+        "id": "forestcomposition.species_percent.-2",
+        "val": "70"
+    },
+    {
+        "id": "forestcomposition.woodspecies.-3",
+        "val": "48"
+    },
+    {
+        "id": "forestcomposition.species_percent.-3",
+        "val": "10"
+    },
+    {
+        "id": "forestcomposition.woodspecies.-4",
+        "val": "13"
+    },
+    {
+        "id": "forestcomposition.species_percent.-4",
+        "val": "0"
+    },
+    {
+        "id": "ageclass_id",
+        "val": "3"
+    },
+    {
+        "id": "crowndensity_id",
+        "val": "1"
+    },
+    {
+        "id": "marketability_id",
+        "val": "1"
+    },
+    {
+        "id": "sanitarystate_id",
+        "val": "1"
+    },
+    {
+        "id": "stability_id",
+        "val": "1"
+    },
+    {
+        "id": "renewalstate_id",
+        "val": "2"
+    },
+    {
+        "id": "underbrush_id",
+        "val": "2"
+    },
+    {
+        "id": "cattlepasture_id",
+        "val": "1"
+    },
+    {
+        "id": "forestuseorgform_id",
+        "val": "2"
+    },
+    {
+        "id": "standforestuse.standforestuse_id.-1",
+        "val": "5"
+    },
+    {
+        "id": "standforestuse.standforestuse_id.-2",
+        "val": "3"
+    },
+    {
+        "id": "burl_id",
+        "val": "1"
+    },
+    {
+        "id": "addinfo",
+        "val": "addinfo-test"
+    },
+    {
+        "id": "firehazardclass_id",
+        "val": "2"
+    },
+    {
+        "id": "projectroad",
+        "val": "roads-test"
+    },
+    {
+        "id": "ecoproblem_id.ecoproblemtype_id.-1",
+        "val": "12"
+    },
+    {
+        "id": "ecoproblem_id.ecoproblemseverity.-1",
+        "val": "2"
+    },
+    {
+        "id": "ecoproblem_id.ecoproblemtype_id.-2",
+        "val": "10"
+    },
+    {
+        "id": "ecoproblem_id.ecoproblemseverity.-2",
+        "val": "1"
+    },
+    {
+        "id": "grasscover_id",
+        "val": "4"
+    },
+    {
+        "id": "plantspecies.plantspecies_id.-1",
+        "val": "5"
+    },
+    {
+        "id": "plantspecies.plantfrequency.-1",
+        "val": "3"
+    },
+    {
+        "id": "plantspecies.plantspecies_id.-2",
+        "val": "2"
+    },
+    {
+        "id": "plantspecies.plantfrequency.-2",
+        "val": "4"
+    },
+    {
+        "id": "plantinredbook.plantspecies_id.-1",
+        "val": "8"
+    },
+    {
+        "id": "plantinredbook.plantfrequency.-1",
+        "val": "3"
+    },
+    {
+        "id": "plantinredbook.plantspecies_id.-2",
+        "val": "17"
+    },
+    {
+        "id": "plantinredbook.plantfrequency.-2",
+        "val": "4"
+    },
+    {
+        "id": "animinredbook.animalspecies_id.-1",
+        "val": "290"
+    },
+    {
+        "id": "animinredbook.animalfrequency_id.-1",
+        "val": "3"
+    },
+    {
+        "id": "steepness_id",
+        "val": "1"
+    },
+    {
+        "id": "clutter",
+        "val": "25"
+    },
+    {
+        "id": "economy_id",
+        "val": "1"
+    },
+    {
+        "id": "landtype_id",
+        "val": "0"
+    },
+    {
+        "id": "peoplevisit_id",
+        "val": "0"
+    },
+    {
+        "id": "potentialtour_id"
+    },
+    {
+        "id": "potentialtour_id"
+    },
+    {
+        "id": "purpose_id",
+        "val": "5425"
+    },
+    {
+        "id": "plannedcomposition.woodspecies.-1",
+        "val": "25"
+    },
+    {
+        "id": "plannedcomposition.species_percent.-1",
+        "val": "50"
+    },
+    {
+        "id": "plannedcomposition.woodspecies.-2",
+        "val": "9"
+    },
+    {
+        "id": "plannedcomposition.species_percent.-2",
+        "val": "30"
+    },
+    {
+        "id": "plannedcomposition.woodspecies.-3",
+        "val": "55"
+    },
+    {
+        "id": "plannedcomposition.species_percent.-3",
+        "val": "20"
+    },
+    {
+        "id": "actionsfirstpriority.actiontype_id.-1",
+        "val": "2"
+    },
+    {
+        "id": "actionsfirstpriority.actionurgency_id.-1",
+        "val": "1"
+    },
+    {
+        "id": "actionsfirstpriority.square.-1",
+        "val": "5"
+    },
+    {
+        "id": "actionsfirstpriority.intensity_id.-1",
+        "val": "1"
+    },
+    {
+        "id": "planuseorgform1_id",
+        "val": "1"
+    },
+    {
+        "id": "standplanuse1.forestusetype_id.-1",
+        "val": "2"
+    },
+    {
+        "id": "standplanuse1.forestusetype_id.-1",
+        "val": "11"
+    },
+    {
+        "id": "soilprocessing1.actiontype_id.-1",
+        "val": "61"
+    },
+    {
+        "id": "soilprocessing1.actiontype_id.-2",
+        "val": "62"
+    },
+    {
+        "id": "speciescreation1.actiontype_id.-1",
+        "val": "64"
+    },
+    {
+        "id": "speciescreation1.actiontype_id.-2",
+        "val": "67"
+    },
+    {
+        "id": "additionact1",
+        "val": "add-actions-1-test"
+    },
+    {
+        "id": "planuseorgform2_id",
+        "val": "0"
+    },
+    {
+        "id": "additionact2",
+        "val": ""
+    },
+    {
+        "id": "acttype",
+        "val": []
+    }
+]
