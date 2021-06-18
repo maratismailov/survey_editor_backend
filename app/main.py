@@ -348,26 +348,46 @@ def send_standestimation_data(data: str):
             block_num = item['val']
         elif item['id'] == 'exposition_id':
             exposition_val = item['val']
+        elif item['id'] == 'stand_num':
+            stand_num = item['val']
+        elif item['id'] == 'landcategory_id':
+            landcategory = item['val']
     print(leshoz_id, forestry_num, block_num)
     forestry_id = get_forestry_id(leshoz_id, forestry_num)
     block_id = get_block_id(forestry_id, block_num)
     oblast_id = get_oblast_id(leshoz_id)
     exposition_id = get_expostition_id(exposition_val)
+    stand_code = get_standcode(leshoz_id, forestry_num, block_num, stand_num)
+    landcategory_id = get_landcategory_id(landcategory)
+    print(stand_code)
+    if stand_code is not None:
+        data.append({'id': 'stand_code', 'val': str(stand_code)})
+        standestimation_id = get_standestimation_id(stand_code)
+        data.append({'id': 'standestimation_id', 'val': str(standestimation_id)})
+        for item in data:
+            if item['id'] == 'stand_num':
+                item['val'] = ''
     print(forestry_id, block_id)
     data.append({'id': 'forestry_id', 'val': str(forestry_id)})
     data.append({'id': 'block_id', 'val': str(block_id)})
     data.append({'id': 'oblast_id', 'val': str(oblast_id)})
-    data.append({'id': 'oblast_id', 'val': str(oblast_id)})
-    data.append({'id': 'unprocessed_flag', 'val': 1})
+    data.append({'id': 'unprocessed_flag', 'val': 0})
     data.append({'id': 'standestimation_cycle', 'val': '2'})
+    data.append({'id': 'acttype', 'val': []})
     for item in data:
         if item['id'] == 'exposition_id':
             item['val'] = str(exposition_id)
+        elif item['id'] == 'block_num':
+            item['val'] = ''
+        elif item['id'] == 'landcategory_id':
+            item['val'] = landcategory_id
+    for item in data:
+        print('acttype', item)
     # for item in data:
     #     print(item)
     # f = open('payload.json',)
     # data = json.load(f)
-    data_bytes = json.dumps(data).encode("ascii")
+    data_bytes = json.dumps(data).encode("utf-8")
     # Opening JSON file
     # f = open('payload.json',)
     # data = json.load(f)
@@ -382,19 +402,27 @@ def send_standestimation_data(data: str):
     # post = urllib.request.urlopen(url, data=bytes(post_data), encoding="ascii")
 
     post_data = urllib.parse.urlencode({'base64': base64.b64encode(data_bytes)})
-    post_data = post_data.encode('ascii')
+    post_data = post_data.encode('utf-8')
     print(post_data)
     user_agent = 'Mozilla/4.0 (compatible; MSIE 5.5; Windows NT)'
-    headers = { 'User-Agent' : user_agent,
-            'Content-type': "application/x-www-form-urlencoded",
-            'Accept': "text/plain"}
+    # headers = { 'User-Agent' : user_agent,
+    #         'Content-type': "application/x-www-form-urlencoded",
+    #         'Accept': "text/plain"}
+    headers = {'User-Agent': 'Mozilla/5.0'}
     request = urllib.request.Request(url, data=post_data, headers=headers)
-    cookies = """show_red_items=1; _ga=GA1.2.631020320.1617350960; _ym_uid=161735096089548495; _ym_d=1617350960; _identity-frontend=a70afbde4814fde870f8fc974326e10c5ed40718117659e178080a4a3e2c4e7fa%3A2%3A%7Bi%3A0%3Bs%3A18%3A%22_identity-frontend%22%3Bi%3A1%3Bs%3A47%3A%22%5B76%2C%22yfPlk9L4YADp1bagnvrodpC1NIEucZ-w%22%2C2592000%5D%22%3B%7D; _csrf=dc45c1e918cb2b184c4082fe66deda44fc940e142446f74eae526b4c36c8fe13a%3A2%3A%7Bi%3A0%3Bs%3A5%3A%22_csrf%22%3Bi%3A1%3Bs%3A32%3A%22v00ig2tViiRAyYum94QXHo1nOS3Tgw-5%22%3B%7D; advanced-frontend=vepbsmkhen05f9rvcq71rkv6a0"""
-    cookies={'show_red_items':1, '_ga':'GA1.2.631020320.1617350960', '_ym_uid':161735096089548495, '_ym_d':1617350960, '_identity-frontend':'a70afbde4814fde870f8fc974326e10c5ed40718117659e178080a4a3e2c4e7fa%3A2%3A%7Bi%3A0%3Bs%3A18%3A%22_identity-frontend%22%3Bi%3A1%3Bs%3A47%3A%22%5B76%2C%22yfPlk9L4YADp1bagnvrodpC1NIEucZ-w%22%2C2592000%5D%22%3B%7D', '_csrf':'dc45c1e918cb2b184c4082fe66deda44fc940e142446f74eae526b4c36c8fe13a%3A2%3A%7Bi%3A0%3Bs%3A5%3A%22_csrf%22%3Bi%3A1%3Bs%3A32%3A%22v00ig2tViiRAyYum94QXHo1nOS3Tgw-5%22%3B%7D', 'advanced-frontend':'vepbsmkhen05f9rvcq71rkv6a0'}
-    response = requests.post(url, cookies={'_csrf': 'dc45c1e918cb2b184c4082fe66deda44fc940e142446f74eae526b4c36c8fe13a%3A2%3A%7Bi%3A0%3Bs%3A5%3A%22_csrf%22%3Bi%3A1%3Bs%3A32%3A%22v00ig2tViiRAyYum94QXHo1nOS3Tgw-5%22%3B%7D';'_identity-frontend':"""a70afbde4814fde870f8fc974326e10c5ed40718117659e178080a4a3e2c4e7fa%3A2%3A%7Bi%3A0%3Bs%3A18%3A%22_identity-frontend%22%3Bi%3A1%3Bs%3A47%3A%22%5B76%2C%22yfPlk9L4YADp1bagnvrodpC1NIEucZ-w%22%2C2592000%5D%22%3B%7D"""}, headers=headers).text
-    print(request)
-    # response = urllib.request.urlopen(request).read()
-    print(response)
+    # cookies = """show_red_items=1; _ga=GA1.2.631020320.1617350960; _ym_uid=161735096089548495; _ym_d=1617350960; _identity-frontend=a70afbde4814fde870f8fc974326e10c5ed40718117659e178080a4a3e2c4e7fa%3A2%3A%7Bi%3A0%3Bs%3A18%3A%22_identity-frontend%22%3Bi%3A1%3Bs%3A47%3A%22%5B76%2C%22yfPlk9L4YADp1bagnvrodpC1NIEucZ-w%22%2C2592000%5D%22%3B%7D; _csrf=dc45c1e918cb2b184c4082fe66deda44fc940e142446f74eae526b4c36c8fe13a%3A2%3A%7Bi%3A0%3Bs%3A5%3A%22_csrf%22%3Bi%3A1%3Bs%3A32%3A%22v00ig2tViiRAyYum94QXHo1nOS3Tgw-5%22%3B%7D; advanced-frontend=vepbsmkhen05f9rvcq71rkv6a0"""
+    # cookies={'show_red_items':1, '_ga':'GA1.2.631020320.1617350960', '_ym_uid':161735096089548495, '_ym_d':1617350960, '_identity-frontend':'a70afbde4814fde870f8fc974326e10c5ed40718117659e178080a4a3e2c4e7fa%3A2%3A%7Bi%3A0%3Bs%3A18%3A%22_identity-frontend%22%3Bi%3A1%3Bs%3A47%3A%22%5B76%2C%22yfPlk9L4YADp1bagnvrodpC1NIEucZ-w%22%2C2592000%5D%22%3B%7D', '_csrf':'dc45c1e918cb2b184c4082fe66deda44fc940e142446f74eae526b4c36c8fe13a%3A2%3A%7Bi%3A0%3Bs%3A5%3A%22_csrf%22%3Bi%3A1%3Bs%3A32%3A%22v00ig2tViiRAyYum94QXHo1nOS3Tgw-5%22%3B%7D', 'advanced-frontend':'vepbsmkhen05f9rvcq71rkv6a0'}
+    login_url = 'https://dev.forest.caiag.kg/ru/site/login'
+    # payload={'username': "m_ismailov",'password': "5caiag275"}
+    # session = requests.Session()
+    # resp1 = session.post(login_url, data=payload, headers=headers)
+    # print('cookies', resp1.text)
+    # resp2 = requests.post(url, cookies=resp1.cookies, data=post_data, headers=headers)
+    # resp2 = requests.post(url, data=post_data, headers=headers)
+    # response = requests.post(url, headers=headers).text
+    # print(request)
+    response = urllib.request.urlopen(request).read()
+    print('response', response)
     # results = db.execute("SELECT survey_body -> 'initial_fields' as initial_fields FROM mobile.templates WHERE survey_id ='{}'".format(id))
     # response = None
     # for template in results:
@@ -430,3 +458,28 @@ def get_expostition_id(exposition_val):
     for data in result:
         response = jsonable_encoder(data)
     return response['exposition_id']
+
+
+def get_standcode(leshoz_id, forestry_num, block_num, stand_num):
+    result = db.execute("select stand_code from forest.stand where leshoz_num = '{}' and forestry_num = '{}' and block_num = '{}' and stand_num = '{}'".format(leshoz_id, forestry_num, block_num, stand_num))
+    response = None
+    for data in result:
+        response = jsonable_encoder(data)
+    if response == None:
+        return None
+    print('resp', response)
+    return response['stand_code']
+
+def get_standestimation_id(stand_code):
+    result = db.execute("select standestimation_id from forest.standestimation s where stand_code = '{}'".format(stand_code))
+    response = None
+    for data in result:
+        response = jsonable_encoder(data)
+    return response['standestimation_id']
+
+def get_landcategory_id(landcategory):
+    result = db.execute("select landtype_id from forest.landtype l where landtype_code = '{}'".format(landcategory))
+    response = None
+    for data in result:
+        response = jsonable_encoder(data)
+    return response['landtype_id']
