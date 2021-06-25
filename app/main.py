@@ -10,13 +10,14 @@ from sqlalchemy import create_engine
 from fastapi.encoders import jsonable_encoder
 import base64
 import requests
+import re
 
 from check_args import check_args
 
 DBPASSWORD = os.environ.get('DBPASSWORD')
 DBUSER = os.environ.get('DBUSER')
 DBHOST = '192.168.31.177'
-DBNAME = 'forestry_bd'
+DBNAME = 'forest_bd_work'
 
 DATABASE_URL = 'postgresql://' + DBUSER + ':' + DBPASSWORD +  '@192.168.31.177/forest_bd_work'
 
@@ -138,6 +139,7 @@ async def save_survey_template(request: Request, id:  str = ""):
     survey_id = data['survey_id']
     name = data['name']
     data = json.dumps(data)
+    data = data.replace("'","''")
     ids = db.execute("SELECT survey_id FROM mobile.templates")
     for id_num in ids:
         if id == id_num[0]:
@@ -335,8 +337,10 @@ def get_initial_fields(id: str):
 
 @app.get("/send_standestimation_data")
 def send_standestimation_data(data: str):
+    # print(data)
     data = json.loads(data)
     for item in data:
+        # print(item)
         if item['id'] == 'Номер лесхоза':
             item['id'] =  'leshoz_id'
             leshoz_id = item['val']
@@ -347,19 +351,27 @@ def send_standestimation_data(data: str):
             item['id'] = 'block_num'
             block_num = item['val']
         elif item['id'] == 'exposition_id':
+            print(item)
             exposition_val = item['val']
         elif item['id'] == 'stand_num':
             stand_num = item['val']
         elif item['id'] == 'landcategory_id':
             landcategory = item['val']
-    print(leshoz_id, forestry_num, block_num)
+        elif item['id'] == 'foresttype_id':
+            foresttype = item['val']
+        elif item['id'] == 'forestcomposition':
+            forestcomposition = item['val']
+        elif item['id'] == 'plannedcomposition':
+            plannedcomposition = item['val']
+    # print(leshoz_id, forestry_num, block_num)
     forestry_id = get_forestry_id(leshoz_id, forestry_num)
     block_id = get_block_id(forestry_id, block_num)
     oblast_id = get_oblast_id(leshoz_id)
     exposition_id = get_expostition_id(exposition_val)
     stand_code = get_standcode(leshoz_id, forestry_num, block_num, stand_num)
     landcategory_id = get_landcategory_id(landcategory)
-    print(stand_code)
+    foresttype_id = get_foresttype_id(foresttype)
+    # print(stand_code)
     if stand_code is not None:
         data.append({'id': 'stand_code', 'val': str(stand_code)})
         standestimation_id = get_standestimation_id(stand_code)
@@ -367,13 +379,15 @@ def send_standestimation_data(data: str):
         for item in data:
             if item['id'] == 'stand_num':
                 item['val'] = ''
-    print(forestry_id, block_id)
+    # print(forestry_id, block_id)
     data.append({'id': 'forestry_id', 'val': str(forestry_id)})
     data.append({'id': 'block_id', 'val': str(block_id)})
     data.append({'id': 'oblast_id', 'val': str(oblast_id)})
     data.append({'id': 'unprocessed_flag', 'val': 0})
     data.append({'id': 'standestimation_cycle', 'val': '2'})
     data.append({'id': 'acttype', 'val': []})
+    ext_forest_composition = get_forestcomposition(forestcomposition, 'forestcomposition')
+    ext_planned_composition = get_forestcomposition(plannedcomposition, 'plannedcomposition')
     for item in data:
         if item['id'] == 'exposition_id':
             item['val'] = str(exposition_id)
@@ -381,8 +395,19 @@ def send_standestimation_data(data: str):
             item['val'] = ''
         elif item['id'] == 'landcategory_id':
             item['val'] = landcategory_id
-    for item in data:
-        print('acttype', item)
+        elif item['id'] == 'foresttype_id':
+            item['val'] = foresttype_id
+        elif item['id'] == 'forestcomposition':
+            item['val'] = ''
+        elif item['id'] == 'plannedcomposition':
+            item['val'] = ''
+    data.extend(ext_forest_composition)
+    data.extend(ext_planned_composition)
+
+    # for item in data:
+    #     print('acttype', item)
+    # return 'composition'
+
     # for item in data:
     #     print(item)
     # f = open('payload.json',)
@@ -403,7 +428,7 @@ def send_standestimation_data(data: str):
 
     post_data = urllib.parse.urlencode({'base64': base64.b64encode(data_bytes)})
     post_data = post_data.encode('utf-8')
-    print(post_data)
+    # print(post_data)
     user_agent = 'Mozilla/4.0 (compatible; MSIE 5.5; Windows NT)'
     # headers = { 'User-Agent' : user_agent,
     #         'Content-type': "application/x-www-form-urlencoded",
@@ -453,6 +478,8 @@ def get_oblast_id(leshoz_id):
     return response['oblast_id']
 
 def get_expostition_id(exposition_val):
+    exposition_val = exposition_val.upper()
+    print('exp', exposition_val)
     result = db.execute("select exposition_id from forest.exposition e where abbreviation = '{}'".format(exposition_val))
     response = None
     for data in result:
@@ -483,3 +510,105 @@ def get_landcategory_id(landcategory):
     for data in result:
         response = jsonable_encoder(data)
     return response['landtype_id']
+
+def get_foresttype_id(foresttype):
+    result = db.execute("select foresttype_id from forest.foresttype f where foresttype_code = '{}'".format(foresttype))
+    response = None
+    for data in result:
+        response = jsonable_encoder(data)
+    return response['foresttype_id']
+
+
+def get_forestcomposition(abbreviation, name):
+    print(abbreviation)
+    abbreviation = abbreviation.upper()
+    result = db.execute("select woodspecies_id, woodshortname from forest.woodspecies w")
+    response = None
+    woodspecies_list = []
+    for data in result:
+        response = jsonable_encoder(data)
+        woodspecies_list.append(response)
+    # for woodspecie in woodspecies_list:
+    #     print(woodspecie)
+    pre_compose = []
+    pre_compose = re.findall("\d*[а-яА-Я]*|\+*[а-яА-Я]*", abbreviation)
+    compose_string = []
+    for item in pre_compose:
+        if item != '':
+            compose_string.append(item)
+    compose = []
+    for index, item in enumerate(compose_string):
+        woodspecies = ''
+        species_percent = ''
+        percent = re.findall("\d|\+|$", item)[0]
+        shortname = re.findall("[а-яА-Я]+|$", item)[0]
+        if percent == '+':
+            percent = 0
+        print(compose_string)
+        print(re.findall("\d|\+|$", item))
+        print(abbreviation)
+        print('perctn', percent)
+        percent = int(percent) * 10
+        print(percent)
+        print(shortname)
+        print(item)
+        woodspecies_id = 0
+        for item in woodspecies_list:
+            if item['woodshortname'] == shortname:
+                woodspecies_id = item['woodspecies_id']
+        print(woodspecies_id)
+        i = (index + 1) * -1
+        woodspecies = {'id': name + '.woodspecies.'+str(i), 'val': woodspecies_id}
+        species_percent = {'id': name + '.species_percent.'+str(i), 'val': str(percent)}
+        compose.append(woodspecies)
+        compose.append(species_percent)
+        print('dicts', woodspecies, species_percent)
+    print('compose', compose)
+    # plus_compose = re.findall("\+*[а-яА-Я]*\D", abbreviation)
+    # plus_compose = re.findall("\+*[а-яА-Я]*\D", abbreviation)
+    print(compose_string)
+    # print('plus', plus_compose)
+    print(abbreviation)
+    return compose
+# 6ад2б2гл+орг
+# 6ад2б2гл+орг
+# 6орг2б2гл+ад
+
+# calcShortMainString(event) {
+#         this.many_main_compose = false;
+#         const pre_result = event.target.value.toUpperCase();
+#         const result = pre_result.match(/(\d*[а-яА-Я]*)/g);
+#         // const result = pre_result.match(/([1-9][а-яА-Я]*)/g);
+#         const result2 = result.filter(el => {
+#           return el != "";
+#         });
+#         const result3 = result2.map(elem => {
+#           return elem.replace(/([а-яА-Я]+)/g, " $1 ");
+#         });
+#         const result5 = result3.map(elem => {
+#           return elem.split(" ");
+#         });
+#         const ids = [];
+#         result5.map(elem => {
+#           ids.push(
+#             this.journal.composition.find(elem2 => {
+#               return elem2.woodshortname == elem[1];
+#             })
+#           );
+#         });
+#         const main_undef = elem => elem == undefined;
+#         this.error_main_compose = ids.some(main_undef);
+#         this.maincomposition = result5.map((elem, index) => {
+#           return {
+#             species_percent: elem[0] * 10,
+#             woodshortname: elem[1],
+#             woodspecies_id: ids[index].woodspecies_id
+#           };
+#         });
+#         if (this.maincomposition.length > 1) {
+#           this.many_main_compose = true;
+#           // this.maincomposition.length = 1
+#         }
+#         // this.maincomposition = new_composition;
+
+#     }
