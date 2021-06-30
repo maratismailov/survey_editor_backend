@@ -361,6 +361,8 @@ def send_standestimation_data(data: str):
             forestcomposition = item['val']
         elif item['id'] == 'plannedcomposition':
             plannedcomposition = item['val']
+        elif item['id'] == 'protectcategory_id':
+            protectcategory = item['val']
     for item in data:
         if 'soilprocessing' in item['id']:
             try:
@@ -403,6 +405,10 @@ def send_standestimation_data(data: str):
         foresttype_id = get_foresttype_id(foresttype)
     except:
          print('nodata')
+    try:
+        protectcategory_id = get_protectcategory_id(protectcategory)
+    except:
+         print('nodata')
     # soilprocessing_id = get_soilprocessing()
     # print(stand_code)
     if stand_code is not None:
@@ -429,6 +435,8 @@ def send_standestimation_data(data: str):
             item['val'] = ''
         elif item['id'] == 'landcategory_id':
             item['val'] = landcategory_id
+        elif item['id'] == 'protectcategory_id':
+            item['val'] = protectcategory_id
         elif item['id'] == 'foresttype_id':
             item['val'] = foresttype_id
         elif item['id'] == 'forestcomposition':
@@ -544,6 +552,13 @@ def get_landcategory_id(landcategory):
     for data in result:
         response = jsonable_encoder(data)
     return response['landtype_id']
+
+def get_protectcategory_id(protectcategory):
+    result = db.execute("select  protectcategory_id from forest.protectcategory p where protectcategory_code = '{}'".format(protectcategory))
+    response = None
+    for data in result:
+        response = jsonable_encoder(data)
+    return response['protectcategory_id']
 
 def get_foresttype_id(foresttype):
     result = db.execute("select foresttype_id from forest.foresttype f where foresttype_code = '{}'".format(foresttype))
