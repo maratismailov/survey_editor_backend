@@ -363,17 +363,44 @@ def send_standestimation_data(data: str):
             plannedcomposition = item['val']
     for item in data:
         if 'soilprocessing' in item['id']:
-            item['val'] = get_soilprocessing(item['val'])
+            try:
+                item['val'] = get_soilprocessing(item['val'])
+            except:
+                print('nodata')
         elif 'speciescreation' in item['id']:
-            item['val'] = get_speciescreation(item['val'])
+            try:
+                item['val'] = get_speciescreation(item['val'])
+            except:
+                print('nodata')
     # print(leshoz_id, forestry_num, block_num)
-    forestry_id = get_forestry_id(leshoz_id, forestry_num)
-    block_id = get_block_id(forestry_id, block_num)
-    oblast_id = get_oblast_id(leshoz_id)
-    exposition_id = get_expostition_id(exposition_val)
-    stand_code = get_standcode(leshoz_id, forestry_num, block_num, stand_num)
-    landcategory_id = get_landcategory_id(landcategory)
-    foresttype_id = get_foresttype_id(foresttype)
+    try:
+        forestry_id = get_forestry_id(leshoz_id, forestry_num)
+    except:
+        print('nodata')
+    try:
+        block_id = get_block_id(forestry_id, block_num)
+    except:
+        print('nodata')
+    try:
+        oblast_id = get_oblast_id(leshoz_id)
+    except:
+         print('nodata')
+    try:
+        exposition_id = get_expostition_id(exposition_val)
+    except:
+         print('nodata')
+    try:
+        stand_code = get_standcode(leshoz_id, forestry_num, block_num, stand_num)
+    except:
+         print('nodata')
+    try:
+        landcategory_id = get_landcategory_id(landcategory)
+    except:
+         print('nodata')
+    try:
+        foresttype_id = get_foresttype_id(foresttype)
+    except:
+         print('nodata')
     # soilprocessing_id = get_soilprocessing()
     # print(stand_code)
     if stand_code is not None:
