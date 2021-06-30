@@ -384,12 +384,14 @@ def send_standestimation_data(data: str):
     try:
         oblast_id = get_oblast_id(leshoz_id)
     except:
-         print('nodata')
+        print('nodata')
     try:
         exposition_id = get_expostition_id(exposition_val)
     except:
-         print('nodata')
+        exposition_id = None
+        print('nodata')
     try:
+        print('standcode', leshoz_id, forestry_num, block_num, stand_num)
         stand_code = get_standcode(leshoz_id, forestry_num, block_num, stand_num)
     except:
          print('nodata')
