@@ -340,7 +340,6 @@ def send_standestimation_data(data: str):
     # print(data)
     data = json.loads(data)
     for item in data:
-        # print(item)
         if item['id'] == 'Номер лесхоза':
             item['id'] =  'leshoz_id'
             leshoz_id = item['val']
@@ -351,7 +350,6 @@ def send_standestimation_data(data: str):
             item['id'] = 'block_num'
             block_num = item['val']
         elif item['id'] == 'exposition_id':
-            print(item)
             exposition_val = item['val']
         elif item['id'] == 'stand_num':
             stand_num = item['val']
@@ -363,6 +361,11 @@ def send_standestimation_data(data: str):
             forestcomposition = item['val']
         elif item['id'] == 'plannedcomposition':
             plannedcomposition = item['val']
+    for item in data:
+        if 'soilprocessing' in item['id']:
+            item['val'] = get_soilprocessing(item['val'])
+        elif 'speciescreation' in item['id']:
+            item['val'] = get_speciescreation(item['val'])
     # print(leshoz_id, forestry_num, block_num)
     forestry_id = get_forestry_id(leshoz_id, forestry_num)
     block_id = get_block_id(forestry_id, block_num)
@@ -371,6 +374,7 @@ def send_standestimation_data(data: str):
     stand_code = get_standcode(leshoz_id, forestry_num, block_num, stand_num)
     landcategory_id = get_landcategory_id(landcategory)
     foresttype_id = get_foresttype_id(foresttype)
+    # soilprocessing_id = get_soilprocessing()
     # print(stand_code)
     if stand_code is not None:
         data.append({'id': 'stand_code', 'val': str(stand_code)})
@@ -389,6 +393,7 @@ def send_standestimation_data(data: str):
     ext_forest_composition = get_forestcomposition(forestcomposition, 'forestcomposition')
     ext_planned_composition = get_forestcomposition(plannedcomposition, 'plannedcomposition')
     for item in data:
+        print(item)
         if item['id'] == 'exposition_id':
             item['val'] = str(exposition_id)
         elif item['id'] == 'block_num':
@@ -518,9 +523,22 @@ def get_foresttype_id(foresttype):
         response = jsonable_encoder(data)
     return response['foresttype_id']
 
+def get_soilprocessing(f_code):
+    result = db.execute("select actiontype_id from forest.actiontype where f_type = 'f31' and f_code = '{}' and oopt_flag = 0".format(f_code))
+    response = None
+    for data in result:
+        response = jsonable_encoder(data)
+    return response['actiontype_id']
+
+def get_speciescreation(f_code):
+    result = db.execute("select actiontype_id from forest.actiontype where f_type = 'f32' and f_code = '{}' and oopt_flag = 0".format(f_code))
+    response = None
+    for data in result:
+        response = jsonable_encoder(data)
+    return response['actiontype_id']
+
 
 def get_forestcomposition(abbreviation, name):
-    print(abbreviation)
     abbreviation = abbreviation.upper()
     result = db.execute("select woodspecies_id, woodshortname from forest.woodspecies w")
     response = None
@@ -528,8 +546,6 @@ def get_forestcomposition(abbreviation, name):
     for data in result:
         response = jsonable_encoder(data)
         woodspecies_list.append(response)
-    # for woodspecie in woodspecies_list:
-    #     print(woodspecie)
     pre_compose = []
     pre_compose = re.findall("\d*[а-яА-Я]*|\+*[а-яА-Я]*", abbreviation)
     compose_string = []
@@ -544,35 +560,19 @@ def get_forestcomposition(abbreviation, name):
         shortname = re.findall("[а-яА-Я]+|$", item)[0]
         if percent == '+':
             percent = 0
-        print(compose_string)
-        print(re.findall("\d|\+|$", item))
-        print(abbreviation)
-        print('perctn', percent)
         percent = int(percent) * 10
-        print(percent)
-        print(shortname)
-        print(item)
         woodspecies_id = 0
         for item in woodspecies_list:
             if item['woodshortname'] == shortname:
                 woodspecies_id = item['woodspecies_id']
-        print(woodspecies_id)
         i = (index + 1) * -1
         woodspecies = {'id': name + '.woodspecies.'+str(i), 'val': woodspecies_id}
         species_percent = {'id': name + '.species_percent.'+str(i), 'val': str(percent)}
         compose.append(woodspecies)
         compose.append(species_percent)
-        print('dicts', woodspecies, species_percent)
-    print('compose', compose)
-    # plus_compose = re.findall("\+*[а-яА-Я]*\D", abbreviation)
-    # plus_compose = re.findall("\+*[а-яА-Я]*\D", abbreviation)
-    print(compose_string)
-    # print('plus', plus_compose)
-    print(abbreviation)
     return compose
-# 6ад2б2гл+орг
-# 6ад2б2гл+орг
-# 6орг2б2гл+ад
+# 4ад4б2гл+орг
+# 5орг3б2гл+ад
 
 # calcShortMainString(event) {
 #         this.many_main_compose = false;
