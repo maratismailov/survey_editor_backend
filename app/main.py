@@ -363,6 +363,13 @@ def send_standestimation_data(data: str):
             plannedcomposition = item['val']
         elif item['id'] == 'protectcategory_id':
             protectcategory = item['val']
+        elif item['id'] == 'new_geometries':
+            new_geometries = item['val']
+            item['val'] = None
+        elif item['id'] == 'geometries_to_delete':
+            geometries_to_delete = item['val']
+            item['val'] = None
+
     for item in data:
         if 'soilprocessing' in item['id']:
             try:
@@ -454,6 +461,23 @@ def send_standestimation_data(data: str):
     #     print(item)
     # f = open('payload.json',)
     # data = json.load(f)
+    new_geometries = json.loads(new_geometries)
+    # print('new', new_geometries)
+    for item in new_geometries:
+        print(leshoz_id, forestry_num, block_num)
+        print('new', item['properties']['id'])
+        result = db.execute("select stand_num from forest.stand where leshoz_num = '{}' and forestry_num = '{}' and block_num = '{}' and stand_num = '{}'".format(leshoz_id, forestry_num, block_num, item['properties']['id']))
+        response = None
+        for data in result:
+            response = jsonable_encoder(data)
+        if response is not None:
+            print('res', response)
+        else:
+            print('none')
+            # query = db.execute("INSERT INTO forest.stand (survey_id, survey_name, survey_body) VALUES ('{}', '{}', '{}')".format(survey_id, name, data))
+
+    print('delete', geometries_to_delete)
+    return
     data_bytes = json.dumps(data).encode("utf-8")
     # Opening JSON file
     # f = open('payload.json',)
