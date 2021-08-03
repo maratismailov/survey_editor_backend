@@ -262,6 +262,10 @@ def generate_survey(id: str, values: str):
     ids = []
     for value in values:
         ids.append(value['value'])
+    get_complete_surveys(id, ids)
+    for item in result['survey_body']['survey_body']:
+        print(item['id'])
+    return
     bounds_query_text = db.execute("SELECT survey_body -> 'bounds_query_text' as query_text FROM mobile.templates WHERE survey_id ='{}'".format(id))
     for query in bounds_query_text:
         bounds_query_text = jsonable_encoder(query)['query_text']
@@ -325,6 +329,20 @@ def generate_survey(id: str, values: str):
     print(result['bounds'])
     # result['center'] = json.loads(geom_result['st_asgeojson'])['coordinates']
     return json.dumps(result)
+
+def get_complete_surveys(id, ids):
+    print(id, ids)
+    if (id == 'stand_estimation_leshoz'):
+        get_stand_estimation_leshoz_complete_surveys(ids)
+
+def get_stand_estimation_leshoz_complete_surveys(ids):
+    query = db.execute("SELECT * FROM forest.standestimation WHERE leshoz_id ='{}' and forestry_num ='{}' and block_num ='{}' order by stand_num".format(ids[0], ids[1], ids[2]))
+    result = []
+    for elem in query:
+        result.append(jsonable_encoder(elem))
+    for item in result:
+        print(item['stand_num'])
+    # print(result)
 
 @app.get("/get_initial_fields")
 def get_initial_fields(id: str):
@@ -477,6 +495,7 @@ def send_standestimation_data(data: str):
             # query = db.execute("INSERT INTO forest.stand (survey_id, survey_name, survey_body) VALUES ('{}', '{}', '{}')".format(survey_id, name, data))
 
     print('delete', geometries_to_delete)
+    print('block_id', block_id)
     return
     data_bytes = json.dumps(data).encode("utf-8")
     # Opening JSON file
