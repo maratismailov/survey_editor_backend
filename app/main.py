@@ -262,9 +262,12 @@ def generate_survey(id: str, values: str):
     ids = []
     for value in values:
         ids.append(value['value'])
-    get_complete_surveys(id, ids)
+    survey_ids = []
     for item in result['survey_body']['survey_body']:
+        survey_ids.append(item['id'])
         print(item['id'])
+    get_complete_surveys(id, ids, survey_ids)
+
     return
     bounds_query_text = db.execute("SELECT survey_body -> 'bounds_query_text' as query_text FROM mobile.templates WHERE survey_id ='{}'".format(id))
     for query in bounds_query_text:
@@ -330,19 +333,36 @@ def generate_survey(id: str, values: str):
     # result['center'] = json.loads(geom_result['st_asgeojson'])['coordinates']
     return json.dumps(result)
 
-def get_complete_surveys(id, ids):
+def get_complete_surveys(id, ids, survey_ids):
     print(id, ids)
     if (id == 'stand_estimation_leshoz'):
-        get_stand_estimation_leshoz_complete_surveys(ids)
+        get_stand_estimation_leshoz_complete_surveys(ids, survey_ids)
 
-def get_stand_estimation_leshoz_complete_surveys(ids):
-    query = db.execute("SELECT * FROM forest.standestimation WHERE leshoz_id ='{}' and forestry_num ='{}' and block_num ='{}' order by stand_num".format(ids[0], ids[1], ids[2]))
+def get_stand_estimation_leshoz_complete_surveys(ids, survey_ids):
+    survey_ids2 = []
+    # for id in survey_ids:
+    #     if id !=
+
+    not_to_include = ['forestcomposition', 'standforestuse', 'ecoproblem_id', 'plannedcomposition', 'actionsfirstpriority', 'standplanuse1', 'soilprocessing1', 'speciescreation1', 'actionssecondpriority', 'standplanuse2',  'soilprocessing2', 'speciescreation2']
+    st = 'siteadmin'
+    for id in survey_ids:
+        if not any([x in id for x in not_to_include]):survey_ids2.append(id)
+    # protectcategory_id,foresttype_id,stand_num,oldstandnums,landcategory_id,exploitationcat_id,exposition_id,forestorigin_id,layerage_id,evolutionstage_id,forestcomposition,ageclass_id,crowndensity_id,marketability_id,sanitarystate_id,stability_id,renewalstate_id,underbrush_id,cattlepasture_id,forestuseorgform_id,standforestuse,burl_id,addinfo,firehazardclass_id,ecoproblem_id,grasscover_id,steepness_id,clutter,economy_id,purpose_id,plannedcomposition,actionsfirstpriority,planuseorgform1_id,standplanuse1,soilprocessing1,speciescreation1,additionact1,actionssecondpriority,planuseorgform2_id,standplanuse2,soilprocessing2,speciescreation2,additionact2
+
+
+    print('s ids', ','.join(survey_ids))
+    print('s ids2', ','.join(survey_ids2))
+    query = db.execute("SELECT standestimation_id, {} FROM forest.standestimation WHERE leshoz_id ='{}' and forestry_num ='{}' and block_num ='{}' order by stand_num ".format(','.join(survey_ids2), ids[0], ids[1], ids[2]))
     result = []
     for elem in query:
         result.append(jsonable_encoder(elem))
     for item in result:
-        print(item['stand_num'])
+        print(item['standestimation_id'])
+        get_standestimation_table_data(item['standestimation_id'])
     # print(result)
+
+def get_standestimation_table_data(standestimation_id):
+
 
 @app.get("/get_initial_fields")
 def get_initial_fields(id: str):
