@@ -22,6 +22,7 @@ DBNAME = 'forest_bd_work'
 DATABASE_URL = 'postgresql://' + DBUSER + ':' + DBPASSWORD +  '@192.168.31.177/forest_bd_work'
 
 db = create_engine(DATABASE_URL)
+woodspecies = []
 
 
 class Stand(ObjectType):
@@ -352,16 +353,29 @@ def get_stand_estimation_leshoz_complete_surveys(ids, survey_ids):
 
     print('s ids', ','.join(survey_ids))
     print('s ids2', ','.join(survey_ids2))
-    query = db.execute("SELECT standestimation_id, {} FROM forest.standestimation WHERE leshoz_id ='{}' and forestry_num ='{}' and block_num ='{}' order by stand_num ".format(','.join(survey_ids2), ids[0], ids[1], ids[2]))
+    query = db.execute("SELECT standestimation_id, {} FROM forest.standestimation WHERE leshoz_id ='{}' and forestry_num ='{}' and block_num ='{}' order by stand_num".format(','.join(survey_ids2), ids[0], ids[1], ids[2]))
     result = []
+    species_query = db.execute("SELECT woodspecies_id, woodshortname FROM forest.woodspecies")
+    species_result = []
+    for elem in species_query:
+        woodspecies.append(jsonable_encoder(elem))
     for elem in query:
         result.append(jsonable_encoder(elem))
     for item in result:
-        print(item['standestimation_id'])
         get_standestimation_table_data(item['standestimation_id'])
+    print(woodspecies)
     # print(result)
 
 def get_standestimation_table_data(standestimation_id):
+    print(standestimation_id)
+    forest_composition = get_forest_composition(standestimation_id, 1)
+
+def get_forest_composition(standestimation_id, plan_fact):
+    forest_compostion_query = db.execute("SELECT woodspecies_id, species_percent FROM forest.forestcomposition WHERE standestimation_id = {} AND plan_fact = {}".format(standestimation_id, plan_fact))
+    forest_compostion_result = []
+    for elem in forest_compostion_query:
+        forest_compostion_result.append(jsonable_encoder(elem))
+    print(standestimation_id, plan_fact, forest_compostion_result)
 
 
 @app.get("/get_initial_fields")
