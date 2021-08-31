@@ -16,10 +16,10 @@ from check_args import check_args
 
 DBPASSWORD = os.environ.get('DBPASSWORD')
 DBUSER = os.environ.get('DBUSER')
-DBHOST = '192.168.31.177'
-DBNAME = 'forest_bd_work'
+DBHOST = os.environ.get('DBHOST')
+DBNAME = os.environ.get('DBNAME')
 
-DATABASE_URL = 'postgresql://' + DBUSER + ':' + DBPASSWORD +  '@192.168.31.177/forest_bd_work'
+DATABASE_URL = 'postgresql://' + DBUSER + ':' + DBPASSWORD +  '@' + DBHOST + '/' + DBNAME
 
 db = create_engine(DATABASE_URL)
 woodspecies = []
